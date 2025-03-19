@@ -1,0 +1,67 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Auth {
+  _id: String!
+  username: String!
+  email: String!
+  role: String!
+}
+
+type Doctor {
+  name: String!
+  specialization: String!
+  contactInfo: String!
+}
+
+type Query {
+  auth(id: String!): Auth!
+}
+
+type Mutation {
+  createDoctor(createDoctorInput: CreateDoctorInput!): Doctor!
+  createAuth(createAuthInput: CreateAuthInput!): Auth!
+  updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
+  removeAuth(id: String!): Auth!
+}
+
+input CreateDoctorInput {
+  name: String!
+  specialization: String!
+  contactInfo: String!
+}
+
+input CreateAuthInput {
+  """ID of the user"""
+  id: String!
+
+  """Username of the user"""
+  username: String!
+
+  """Email of the user"""
+  email: String!
+
+  """Password of the user"""
+  password: String!
+
+  """Role of the user"""
+  role: String! = "user"
+}
+
+input UpdateAuthInput {
+  """ID of the user"""
+  id: String!
+
+  """Username of the user"""
+  username: String
+
+  """Email of the user"""
+  email: String
+
+  """Password of the user"""
+  password: String
+
+  """Role of the user"""
+  role: String = "user"
+}
