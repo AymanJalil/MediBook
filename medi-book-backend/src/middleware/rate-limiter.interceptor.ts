@@ -1,38 +1,30 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+// middleware/rate-limiter.interceptor.ts
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ThrottlerException } from './throttler.exception';
-import { RateLimiterRedis } from 'rate-limiter-flexible';
-import { Redis } from 'ioredis';
+import { Observable } from 'rxjs';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
 
 @Injectable()
 export class RateLimiterInterceptor implements NestInterceptor {
-  private rateLimiter: RateLimiterRedis;
+  private rateLimiter: RateLimiterMemory;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly redisClient: Redis
-  ) {
-    this.rateLimiter = new RateLimiterRedis({
-      storeClient: redisClient,
-      keyPrefix: 'rateLimiter',
-      points: this.configService.get<number>('RATE_LIMIT_POINTS', 10), // Default: 10 requests
-      duration: this.configService.get<number>('RATE_LIMIT_TTL', 60), // Default: 60 seconds
-      blockDuration: 0,
+  constructor(private configService: ConfigService) {
+    // Create an in-memory rate limiter
+    this.rateLimiter = new RateLimiterMemory({
+      points: this.configService.get('RATE_LIMIT_POINTS', 100),
+      duration: this.configService.get('RATE_LIMIT_DURATION', 60),
     });
   }
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<any> {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
-    const ip = request.ip || request.connection.remoteAddress; // Fallback for IP extraction
+    const ip = request.clientIp || request.ip;
 
     try {
-      await this.rateLimiter.consume(ip, 1);
+      await this.rateLimiter.consume(ip);
       return next.handle();
     } catch (error) {
-      if (error instanceof Error) {
-        throw new ThrottlerException();
-      }
-      throw error;
+      throw new HttpException('Too Many Requests', HttpStatus.TOO_MANY_REQUESTS);
     }
   }
 }

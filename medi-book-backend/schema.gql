@@ -3,38 +3,48 @@
 # ------------------------------------------------------
 
 type Auth {
-  _id: String!
+  _id: ID!
   username: String!
   email: String!
   role: String!
 }
 
+type LoginResponse {
+  accessToken: String!
+  user: Auth!
+}
+
 type Doctor {
+  _id: ID!
   name: String!
   specialization: String!
-  contactInfo: String!
+  email: String!
+  phone: String!
+  address: String
+  bio: String
+  profileImage: String
+  isActive: Boolean!
 }
 
 type Query {
-  auth(id: String!): Auth!
+  getAdminProfile(id: String!): Auth!
+  doctors: [Doctor!]!
+  doctor(id: ID!): Doctor!
 }
 
 type Mutation {
+  createAdmin(createAuthInput: CreateAuthInput!): Auth!
+  createUser(createAuthInput: CreateAuthInput!): Auth!
+  login(loginInput: LoginInput!): LoginResponse!
+  adminLogin(loginInput: LoginInput!): LoginResponse!
   createDoctor(createDoctorInput: CreateDoctorInput!): Doctor!
-  createAuth(createAuthInput: CreateAuthInput!): Auth!
-  updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
-  removeAuth(id: String!): Auth!
-}
-
-input CreateDoctorInput {
-  name: String!
-  specialization: String!
-  contactInfo: String!
+  updateDoctor(updateDoctorInput: UpdateDoctorInput!): Doctor!
+  removeDoctor(id: ID!): Doctor!
 }
 
 input CreateAuthInput {
   """ID of the user"""
-  id: String!
+  id: String
 
   """Username of the user"""
   username: String!
@@ -46,22 +56,32 @@ input CreateAuthInput {
   password: String!
 
   """Role of the user"""
-  role: String! = "user"
+  role: String! = "admin"
 }
 
-input UpdateAuthInput {
-  """ID of the user"""
-  id: String!
+input LoginInput {
+  username: String!
+  password: String!
+  requireAdmin: Boolean = false
+}
 
-  """Username of the user"""
-  username: String
+input CreateDoctorInput {
+  name: String!
+  specialization: String!
+  email: String!
+  phone: String!
+  address: String
+  bio: String
+  profileImage: String
+}
 
-  """Email of the user"""
+input UpdateDoctorInput {
+  name: String
+  specialization: String
   email: String
-
-  """Password of the user"""
-  password: String
-
-  """Role of the user"""
-  role: String = "user"
+  phone: String
+  address: String
+  bio: String
+  profileImage: String
+  id: ID!
 }

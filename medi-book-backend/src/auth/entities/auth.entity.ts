@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { ObjectType, Field } from '@nestjs/graphql'; // Import ObjectType and Field
+import { ObjectType, Field, ID } from '@nestjs/graphql'; // Import ObjectType and Field
 
 export type AuthDocument = Auth & Document;
 
 @ObjectType() // Add ObjectType decorator
 @Schema()
 export class Auth {
-  @Field() // Add Field decorator for id
+  @Field(() => ID) // Add Field decorator for id
   _id: string;
 
   @Field() // Add Field decorator
@@ -22,7 +22,7 @@ export class Auth {
   password: string;
 
   @Field() // Add Field decorator
-  @Prop({ required: true, default: 'user' })
+  @Prop({ required: true, default: 'admin' })
   role: string;
 }
 

@@ -1,0 +1,92 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Auth {
+  _id: String!
+  username: String!
+  email: String!
+  role: String!
+}
+
+type Doctor {
+  _id: ID!
+  name: String!
+  specialization: String!
+  email: String!
+  phone: String!
+  address: String
+  bio: String
+  profileImage: String
+  isActive: Boolean!
+}
+
+type Query {
+  auth(id: String!): Auth!
+  doctors: [Doctor!]!
+  doctor(id: ID!): Doctor!
+}
+
+type Mutation {
+  createAuth(createAuthInput: CreateAuthInput!): Auth!
+  updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
+  removeAuth(id: String!): Auth!
+  createDoctor(createDoctorInput: CreateDoctorInput!): Doctor!
+  updateDoctor(updateDoctorInput: UpdateDoctorInput!): Doctor!
+  removeDoctor(id: ID!): Doctor!
+}
+
+input CreateAuthInput {
+  """ID of the user"""
+  id: String!
+
+  """Username of the user"""
+  username: String!
+
+  """Email of the user"""
+  email: String!
+
+  """Password of the user"""
+  password: String!
+
+  """Role of the user"""
+  role: String! = "user"
+}
+
+input UpdateAuthInput {
+  """ID of the user"""
+  id: String!
+
+  """Username of the user"""
+  username: String
+
+  """Email of the user"""
+  email: String
+
+  """Password of the user"""
+  password: String
+
+  """Role of the user"""
+  role: String = "user"
+}
+
+input CreateDoctorInput {
+  name: String!
+  specialization: String!
+  email: String!
+  phone: String!
+  address: String
+  bio: String
+  profileImage: String
+}
+
+input UpdateDoctorInput {
+  name: String
+  specialization: String
+  email: String
+  phone: String
+  address: String
+  bio: String
+  profileImage: String
+  id: ID!
+}

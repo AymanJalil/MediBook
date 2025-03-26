@@ -1,12 +1,16 @@
+// src/doctor/entities/doctor.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { ObjectType, Field } from '@nestjs/graphql';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Field, ObjectType, ID } from '@nestjs/graphql';
 
 export type DoctorDocument = Doctor & Document;
 
 @ObjectType()
-@Schema()
+@Schema({ timestamps: true })
 export class Doctor {
+  @Field(() => ID)
+  _id: MongooseSchema.Types.ObjectId;
+
   @Field()
   @Prop({ required: true })
   name: string;
@@ -17,7 +21,27 @@ export class Doctor {
 
   @Field()
   @Prop({ required: true, unique: true })
-  contactInfo: string;
+  email: string;
+
+  @Field()
+  @Prop({ required: true })
+  phone: string;
+
+  @Field({ nullable: true })
+  @Prop()
+  address?: string;
+
+  @Field({ nullable: true })
+  @Prop()
+  bio?: string;
+
+  @Field({ nullable: true })
+  @Prop()
+  profileImage?: string;
+
+  @Field(() => Boolean, { defaultValue: true })
+  @Prop({ default: true })
+  isActive: boolean;
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);

@@ -14,9 +14,9 @@ describe('AuthResolver', () => {
     }).compile();
 
     resolver = module.get<AuthResolver>(AuthResolver);
-  }, 10000);
+  });
 
   it('should be defined', () => {
     expect(resolver).toBeDefined();
-  });
+  }, 30000);
 });

@@ -1,41 +1,36 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Inject, Scope } from '@nestjs/common';
+// middleware/cache.interceptor.ts
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cache } from 'cache-manager';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Request } from 'express';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly configService: ConfigService,
-  ) { }
+  private cache: Map<string, { data: any; expiry: number }> = new Map();
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<any> {
-    const isCacheEnabled = this.configService.get<boolean>('CACHE_ENABLED');
-    if (!isCacheEnabled) {
+  constructor(private configService: ConfigService) {}
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    if (context.switchToHttp().getRequest().method !== 'GET') {
       return next.handle();
     }
 
-    const request: any = context.switchToHttp().getRequest(); // casting request to any
-    const key = this.generateCacheKey(request);
+    const url = context.switchToHttp().getRequest().url;
+    const cacheKey = url;
+    const ttl = this.configService.get('CACHE_TTL', 60) * 1000; // Convert to milliseconds
 
-    const cachedData = await this.cacheManager.get(key);
-    if (cachedData) {
-      return cachedData;
+    const cachedItem = this.cache.get(cacheKey);
+    if (cachedItem && cachedItem.expiry > Date.now()) {
+      return of(cachedItem.data);
     }
 
-    return next.handle().toPromise().then(response => {
-      this.cacheManager.set(key, response, this.configService.get<number>('REDIS_TTL') || 60); // default ttl value
-      return response;
-    });
-  }
-
-  private generateCacheKey(request: any): string { // casting request to any
-    const { method, url, body, query } = request;
-    const baseKey = `cache:${method}:${url}`;
-    const params = { body, query };
-    const paramsHash = JSON.stringify(params);
-    return `${baseKey}:${paramsHash}`;
+    return next.handle().pipe(
+      tap(data => {
+        this.cache.set(cacheKey, {
+          data,
+          expiry: Date.now() + ttl
+        });
+      })
+    );
   }
 }

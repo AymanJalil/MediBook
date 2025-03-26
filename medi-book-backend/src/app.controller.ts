@@ -1,12 +1,20 @@
+// app.controller.ts
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    // @InjectConnection() private readonly mongoConnection: Connection,
+  ) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Get('health') // Changed endpoint to /health
+  async healthCheck() {
+    return {
+      status: 'ok',
+      message: 'Server is healthy',
+      timestamp: new Date().toISOString(),
+    };
   }
 }

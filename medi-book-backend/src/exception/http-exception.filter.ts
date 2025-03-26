@@ -1,5 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { ContextType } from '@nestjs/common/interfaces';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -8,6 +9,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
+    const contextType = host.getType();
+
+    // Handle GraphQL errors differently
+    if (contextType === 'graphql' as any) { // Type assertion to avoid TypeScript error
+      this.logger.error(
+        `GraphQL Error`,
+        exception instanceof HttpException ? exception.message : 'Internal server error',
+        exception instanceof HttpException ? exception.stack : 'No stack trace'
+      );
+      // For GraphQL, we don't need to send a response - just let the error propagate
+      throw exception;
+    }
+
+    // Standard HTTP error handling
     const context = host.switchToHttp();
     const httpStatus = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -22,7 +37,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       method: method,
       message:
         httpStatus !== HttpStatus.INTERNAL_SERVER_ERROR
-          ? (exception as HttpException).message || exception
+          ? (exception instanceof HttpException ? exception.message : String(exception))
           : 'Internal server error',
     };
 
