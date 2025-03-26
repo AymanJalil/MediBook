@@ -4,5 +4,6 @@
     "@nestjs/graphql": "^13.0.3",
     "graphql": "^16.10.0",
     "graphql-ws": "^6.0.4"
-  }
+  },
+  "version": "0.0.1"
 }
